@@ -19,7 +19,7 @@ var V3Loader = `
 	document.harv.p = new Promise(r => document.harv.pResolve = r);
 	document.harv.increment = () => {
 		document.harv.counter++;
-		document.querySelector('#solvedCounter').textContent = "Solved " + document.harv.counter;
+		document.querySelector('#solvedCounter').textContent = document.harv.counter;
 	}	
 
 	window.onLoadCallback = () => document.harv.isEnterprise ? grecaptcha.enterprise.ready(document.harv.pResolve) : grecaptcha.ready(document.harv.pResolve);
