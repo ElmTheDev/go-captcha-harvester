@@ -49,7 +49,7 @@ var V3Loader = `
 			document.harv.increment();
 			return r;
 		} catch(e) {
-			return "error";
+			return {"harvest_error": e.message};
 		}
 	}
 })();`

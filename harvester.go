@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -17,10 +19,10 @@ type Harvester struct {
 	Password string
 	Proxy string
 
+	Type string
 	IsReady bool
 	IsSolving     bool
 	SolvedCount   int
-	Type string
 	Url  *url.URL
 
 	Done chan bool
@@ -30,6 +32,10 @@ type Harvester struct {
 
 	Loader string
 	HTML string
+}
+
+type HarvesterError struct {
+	Error string `json:"harvest_error"`
 }
 
 // Initializes harvester and prepares it for solving
@@ -77,6 +83,21 @@ func (e *Harvester) Initialize() {
 	browser.MustClose()
 }
 
+func (e *Harvester) Harvest(siteKey string, isEnterprise bool, renderParams map[string]string) (string, error) {
+	renderParamsObject, err := json.Marshal(renderParams) 
+	if err != nil {
+		return "", err
+	}
+
+
+	result := e.Page.MustEval(e.getJsCallString(siteKey, isEnterprise, string(renderParamsObject)))
+	if result.Get("harvest_error").String() != "<nil>" {
+		return "", errors.New(result.Get("harvest_error").String())
+	}
+
+	return result.String(), nil
+}
+
 func (e *Harvester) Destroy() {
 	e.Done <- true
 }
@@ -90,7 +111,20 @@ func (e *Harvester) setupHtml() {
 	}
 
 	default:
+		e.Type = "v3"
+		e.Loader = constants.V3Loader
+		e.HTML = constants.V3Html
 		println(fmt.Sprintf("harvester type \"%s\" isn't supported defaulting to v3", e.Type))
 		break
 	}
+}
+
+func (e *Harvester) getJsCallString(siteKey string, isEnterprise bool, renderParams string) string {
+	switch e.Type {
+	case "v3": {
+		return fmt.Sprintf(`document.harv.harvest("%s", %t, %s)`, siteKey, isEnterprise, renderParams)
+	}
+	}
+
+	return "alert('Not supported');"
 }
