@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
+	"strings"
 	"time"
 
 	"github.com/ElmTheDev/go-captcha-harvester/constants"
@@ -14,62 +14,48 @@ import (
 	"github.com/phf/go-queue/queue"
 )
 
-type Harvester struct {
-	CustomName string
-
-	Email    string
-	Password string
-	Proxy    string
-
-	Type        string
-	IsReady     bool
-	IsSolving   bool
-	SolvedCount int
-	Url         *url.URL
-
-	Done chan bool
-
-	Browser *rod.Browser
-	Page    *rod.Page
-
-	Loader string
-	HTML   string
-
-	Queue *queue.Queue
-}
-
-type queueEntry struct {
-	SiteKey      string
-	IsEnterprise bool
-	RenderParams string
-
-	Channel chan queueResult
-}
-
-type queueResult struct {
-	Error error
-	Token string
-}
-
-type harvesterError struct {
-	Error string `json:"harvest_error"`
-}
-
 // Initializes harvester and prepares it for solving
 func (e *Harvester) Initialize() {
+	if e.Proxy != "" {
+		splitProxy := strings.Split(e.Proxy, ":")
+		if len(splitProxy) == 4 {
+			e.ParsedProxy = harvesterProxy{
+				Ip: splitProxy[0],
+				Port: splitProxy[1],
+				Username: splitProxy[2],
+				Password: splitProxy[3],
+			}
+		} else {
+			e.ParsedProxy = harvesterProxy{
+				Ip: splitProxy[0],
+				Port: splitProxy[1],
+			}
+		}
+	}
+
 	e.Queue = queue.New().Init()
 
 	e.setupHtml()
 	e.Done = make(chan bool)
 
 	// Start browser
-	url := launcher.New().
+	browserLauncher := launcher.New().
 		Set("window-size", "200,700").
-		Headless(false).
-		MustLaunch()
+		Headless(false)
+
+	if e.ParsedProxy.Ip != "" {
+		browserLauncher.Proxy(fmt.Sprintf("%s:%s", e.ParsedProxy.Ip, e.ParsedProxy.Port))
+	}
+
+	url := browserLauncher.MustLaunch()
 
 	browser := rod.New().ControlURL(url).MustConnect()
 	defer browser.MustClose()
+	
+
+	if e.ParsedProxy.Username != "" && e.ParsedProxy.Password != "" {
+		go browser.MustHandleAuth(e.ParsedProxy.Username, e.ParsedProxy.Password)()
+	}
 
 	// Setup request interception on the URL
 	router := browser.HijackRequests()
