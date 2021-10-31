@@ -46,10 +46,6 @@ type queueResult struct {
 	Token string
 }
 
-type harvesterError struct {
-	Error string `json:"harvest_error"`
-}
-
 type harvesterProxy struct {
 	Ip       string
 	Port     string

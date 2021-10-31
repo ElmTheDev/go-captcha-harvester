@@ -158,7 +158,6 @@ func (e *Harvester) setupHtml() {
 		e.Loader = constants.V3Loader
 		e.HTML = constants.V3Html
 		println(fmt.Sprintf("harvester type \"%s\" isn't supported defaulting to v3", e.Type))
-		break
 	}
 }
 
