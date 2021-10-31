@@ -35,6 +35,7 @@ type Harvester struct {
 type queueEntry struct {
 	SiteKey      string
 	IsEnterprise bool
+	IsInvisible bool
 	RenderParams string
 
 	Channel chan queueResult

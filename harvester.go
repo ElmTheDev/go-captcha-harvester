@@ -94,7 +94,7 @@ func (e *Harvester) Initialize() {
 }
 
 // Enqueues captcha for solving
-func (e *Harvester) Harvest(siteKey string, isEnterprise bool, renderParams map[string]string) (string, error) {
+func (e *Harvester) Harvest(siteKey string, isInvisible bool, isEnterprise bool, renderParams map[string]string) (string, error) {
 	// Ensures we keep track of captchas each harvester got to solve.
 	e.SolvedCount++
 
@@ -108,6 +108,7 @@ func (e *Harvester) Harvest(siteKey string, isEnterprise bool, renderParams map[
 		SiteKey: siteKey,
 		RenderParams: string(renderParamsObject),
 		IsEnterprise: isEnterprise,
+		IsInvisible: isInvisible,
 		Channel: resultChannel,
 	})
 
@@ -121,8 +122,8 @@ func (e *Harvester) Harvest(siteKey string, isEnterprise bool, renderParams map[
 }
 
 // Execute solving on browser
-func (e *Harvester) executeHarvest(siteKey string, isEnterprise bool, renderParams string) queueResult {
-	result := e.Page.MustEval(e.getJsCallString(siteKey, isEnterprise, renderParams))
+func (e *Harvester) executeHarvest(entry queueEntry) queueResult {
+	result := e.Page.MustEval(e.getJsCallString(entry))
 	if result.Get("harvest_error").String() != "<nil>" {
 		return queueResult{Error: errors.New(result.Get("harvest_error").String())}
 	}
@@ -162,12 +163,12 @@ func (e *Harvester) setupHtml() {
 }
 
 // Generates JavaScript snippet to pass to browser
-func (e *Harvester) getJsCallString(siteKey string, isEnterprise bool, renderParams string) string {
+func (e *Harvester) getJsCallString(entry queueEntry) string {
 	switch e.Type {
 	case "v3":
-			return fmt.Sprintf(`document.harv.harvest("%s", %t, %s)`, siteKey, isEnterprise, renderParams)
+			return fmt.Sprintf(`document.harv.harvest("%s", %t, %s)`, entry.SiteKey, entry.IsEnterprise, entry.RenderParams)
 	case "v2":
-			return fmt.Sprintf(`document.harv.harvest("%s", false, %s)`, siteKey, renderParams)
+			return fmt.Sprintf(`document.harv.harvest("%s", %t, %s)`, entry.SiteKey, entry.IsInvisible, entry.RenderParams)
 	}
 
 	return "alert('Not supported');"
@@ -189,7 +190,7 @@ func (e *Harvester) clearQueue() {
 				continue
 			}
 
-			result := e.executeHarvest(parsedElement.SiteKey, parsedElement.IsEnterprise, parsedElement.RenderParams)
+			result := e.executeHarvest(parsedElement)
 			parsedElement.Channel <- result
 		} else {
 			time.Sleep(250 * time.Millisecond)

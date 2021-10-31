@@ -82,6 +82,7 @@ var V2Loader = `
 		try {
 			await document.harv.captchaLoaded;
 
+			let firstLoad = false;
 			let e = document.querySelector('.g-recaptcha');
 
 			if(!e) {
@@ -91,16 +92,29 @@ var V2Loader = `
 
 				e = document.createElement('div');
 				e.setAttribute('class', 'g-recaptcha');
+	
 				if(isInvisible) e.setAttribute('data-size', 'invisible');
 				document.querySelector('#captchaFrame').appendChild(e);
 				e.style.display = 'none';
+
+				firstLoad = true;
 			}
 
 			const r = new Promise(x => document.harv.resolver = x);
 
 			e.style.display = "";
-			if(document.harv.isInvisible) {
-				grecaptcha.execute();
+
+			if(isInvisible && firstLoad) {
+				grecaptcha.render(e, Object.assign({
+					sitekey: siteKey,
+					callback: (r) => {
+						if(document.harv.resolver) document.harv.resolver(r);
+						document.harv.increment();
+						grecaptcha.reset();
+						
+						e.style.display = 'none';
+					}
+				}, renderParams));
 			} else {
 				grecaptcha.render(e, Object.assign({
 					sitekey: siteKey,
@@ -112,6 +126,10 @@ var V2Loader = `
 						e.style.display = 'none';
 					}
 				}, renderParams));
+			}
+
+			if(document.harv.isInvisible) {
+				grecaptcha.execute();
 			}
 			
 			return r;
