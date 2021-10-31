@@ -15,6 +15,7 @@ type Harvester struct {
 
 	Email    string
 	Password string
+	Proxy string
 
 	IsReady bool
 	IsSolving     bool
@@ -26,10 +27,14 @@ type Harvester struct {
 
 	Browser *rod.Browser
 	Page *rod.Page
+
+	Loader string
+	HTML string
 }
 
 // Initializes harvester and prepares it for solving
 func (e *Harvester) Initialize() {
+	e.setupHtml()
 	e.Done = make(chan bool)
 
 	// Start browser
@@ -47,7 +52,7 @@ func (e *Harvester) Initialize() {
 	router.MustAdd(fmt.Sprintf("*%s*", e.Url.Host), func(ctx *rod.Hijack) {
 		_ = ctx.LoadResponse(http.DefaultClient, true)
 
-		ctx.Response.SetBody(constants.V3Html)
+		ctx.Response.SetBody(e.HTML)
 	})
 
 	go router.Run()
@@ -64,8 +69,28 @@ func (e *Harvester) Initialize() {
 
 	// Load harvesting code into the page
 	// TODO: Support multiple
-	page.MustEval(constants.V3Loader)
+	page.MustEval(e.Loader)
 	
 	e.IsReady = true
 	<- e.Done
+
+	browser.MustClose()
+}
+
+func (e *Harvester) Destroy() {
+	e.Done <- true
+}
+
+func (e *Harvester) setupHtml() {
+	switch e.Type {
+	case "v3": {
+		e.Loader = constants.V3Loader
+		e.HTML = constants.V3Html
+		break
+	}
+
+	default:
+		println(fmt.Sprintf("harvester type \"%s\" isn't supported defaulting to v3", e.Type))
+		break
+	}
 }
