@@ -89,7 +89,11 @@ func (e *Harvester) Initialize() {
 	browser.MustClose()
 }
 
+// Enqueues captcha for solving
 func (e *Harvester) Harvest(siteKey string, isEnterprise bool, renderParams map[string]string) (string, error) {
+	// Ensures we keep track of captchas each harvester got to solve.
+	e.SolvedCount++
+
 	renderParamsObject, err := json.Marshal(renderParams)
 	if err != nil {
 		return "", err
@@ -112,8 +116,8 @@ func (e *Harvester) Harvest(siteKey string, isEnterprise bool, renderParams map[
 	return resultParsed.Token, nil
 }
 
+// Execute solving on browser
 func (e *Harvester) executeHarvest(siteKey string, isEnterprise bool, renderParams string) queueResult {
-	println(e.CustomName, e.Page)
 	result := e.Page.MustEval(e.getJsCallString(siteKey, isEnterprise, renderParams))
 	if result.Get("harvest_error").String() != "<nil>" {
 		return queueResult{Error: errors.New(result.Get("harvest_error").String())}
@@ -122,10 +126,12 @@ func (e *Harvester) executeHarvest(siteKey string, isEnterprise bool, renderPara
 	return queueResult{Token: result.String(), Error: nil}
 }
 
+// CLoses browser
 func (e *Harvester) Destroy() {
 	e.Done <- true
 }
 
+// Sets up initial values for captcha harvesting request interception
 func (e *Harvester) setupHtml() {
 	switch e.Type {
 	case "v3":
@@ -144,6 +150,7 @@ func (e *Harvester) setupHtml() {
 	}
 }
 
+// Generates JavaScript snippet to pass to browser
 func (e *Harvester) getJsCallString(siteKey string, isEnterprise bool, renderParams string) string {
 	switch e.Type {
 	case "v3":
@@ -155,6 +162,7 @@ func (e *Harvester) getJsCallString(siteKey string, isEnterprise bool, renderPar
 	return "alert('Not supported');"
 }
 
+// Loops through queue solving captchas one by one
 func (e *Harvester) clearQueue() {
 	for {
 		if e.Queue.Len() != 0 && e.Page != nil {
