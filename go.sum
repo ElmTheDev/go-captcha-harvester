@@ -1,9 +1,13 @@
+github.com/go-rod/rod v0.100.0/go.mod h1:h9igqSGReLmOWyHtdf0AtUd0mdkHFu3gFwBeV+stleM=
 github.com/go-rod/rod v0.101.8 h1:oV0O97uwjkCVyAP0hD6K6bBE8FUMIjs0dtF7l6kEBsU=
 github.com/go-rod/rod v0.101.8/go.mod h1:N/zlT53CfSpq74nb6rOR0K8UF0SPUPBmzBnArrms+mY=
+github.com/go-rod/stealth v0.4.3 h1:MVNZrH61qSRk9nyCK8uGorCWqWv3TCLdtGp1SX5BCzQ=
+github.com/go-rod/stealth v0.4.3/go.mod h1:XUEF/xE6o8NWenxPkk6AaDiSfrUWKEvZFUjATCLkCMI=
 github.com/phf/go-queue v0.0.0-20170504031614-9abe38d0371d h1:U+PMnTlV2tu7RuMK5etusZG3Cf+rpow5hqQByeCzJ2g=
 github.com/phf/go-queue v0.0.0-20170504031614-9abe38d0371d/go.mod h1:lXfE4PvvTW5xOjO6Mba8zDPyw8M93B6AQ7frTGnMlA8=
 github.com/ysmood/goob v0.3.0 h1:XZ51cZJ4W3WCoCiUktixzMIQF86W7G5VFL4QQ/Q2uS0=
 github.com/ysmood/goob v0.3.0/go.mod h1:S3lq113Y91y1UBf1wj1pFOxeahvfKkCk6mTWTWbDdWs=
+github.com/ysmood/got v0.12.0/go.mod h1:pE1l4LOwOBhQg6A/8IAatkGp7uZjnalzrZolnlhhMgY=
 github.com/ysmood/got v0.15.1/go.mod h1:pE1l4LOwOBhQg6A/8IAatkGp7uZjnalzrZolnlhhMgY=
 github.com/ysmood/gotrace v0.2.2/go.mod h1:TzhIG7nHDry5//eYZDYcTzuJLYQIkykJzCRIo4/dzQM=
 github.com/ysmood/gson v0.6.4 h1:Yb6tosv6bk59HqjZu2/7o4BFherpYEMkDkXmlhgryZ4=

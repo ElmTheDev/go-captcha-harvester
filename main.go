@@ -6,18 +6,17 @@ import (
 )
 
 func main() {
-	u, _ := url.Parse("https://www.yeezysupply.com/product/EG6463")
+	u, _ := url.Parse("https://patrickhlauke.github.io/recaptcha/")
 	harv := Harvester{
 		CustomName: "my harvester",
 
 		Url:  u,
-		Type: "v3",
+		Type: "v2",
 	}
 
 	go harv.Initialize()
-	println("hi")
 
-	queueResult, err := harv.Harvest("6Lf34M8ZAAAAANgE72rhfideXH21Lab333mdd2d-", true, map[string]string{})
+	queueResult, err := harv.Harvest("6Ld2sf4SAAAAAKSgzs0Q13IZhY02Pyo31S2jgOB5", true, map[string]string{})
 	if err != nil {
 		panic(err)
 	}

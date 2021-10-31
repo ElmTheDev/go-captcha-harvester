@@ -11,6 +11,7 @@ import (
 	"github.com/ElmTheDev/go-captcha-harvester/constants"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
+	"github.com/go-rod/stealth"
 	"github.com/phf/go-queue/queue"
 )
 
@@ -68,8 +69,10 @@ func (e *Harvester) Initialize() {
 
 	go router.Run()
 
+	// Avoid bot detection
+	page := stealth.MustPage(browser)
 	// Load the page and prepare it for solving
-	page := browser.MustPage(e.Url.String())
+	page.MustNavigate(e.Url.String())
 
 	// Wait for page to load before continuing
 	page.MustElement("title").MustText()
@@ -80,6 +83,7 @@ func (e *Harvester) Initialize() {
 
 	// Load harvesting code into the page
 	// TODO: Support multiple
+	println(e.Loader)
 	page.MustEval(e.Loader)
 
 	e.IsReady = true
@@ -141,6 +145,13 @@ func (e *Harvester) setupHtml() {
 			break
 		}
 
+	case "v2":
+		{
+			e.Loader = constants.V2Loader
+			e.HTML = constants.V2Html
+			break
+		}	
+
 	default:
 		e.Type = "v3"
 		e.Loader = constants.V3Loader
@@ -154,9 +165,9 @@ func (e *Harvester) setupHtml() {
 func (e *Harvester) getJsCallString(siteKey string, isEnterprise bool, renderParams string) string {
 	switch e.Type {
 	case "v3":
-		{
 			return fmt.Sprintf(`document.harv.harvest("%s", %t, %s)`, siteKey, isEnterprise, renderParams)
-		}
+	case "v2":
+			return fmt.Sprintf(`document.harv.harvest("%s", false, %s)`, siteKey, renderParams)
 	}
 
 	return "alert('Not supported');"
