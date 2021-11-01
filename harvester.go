@@ -11,7 +11,6 @@ import (
 	"github.com/ElmTheDev/go-captcha-harvester/constants"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
-	"github.com/go-rod/stealth"
 	"github.com/phf/go-queue/queue"
 )
 
@@ -70,7 +69,15 @@ func (e *Harvester) Initialize() {
 	go router.Run()
 
 	// Avoid bot detection
-	page := stealth.MustPage(browser)
+	page := browser.MustPage()
+	page.Emulate(fakeDevice)
+	e.Browser = browser
+	e.Page = page
+
+	if e.Email != "" && e.Password != "" {
+		e.Login()
+	}
+
 	// Load the page and prepare it for solving
 	page.MustNavigate(e.Url.String())
 
@@ -78,8 +85,6 @@ func (e *Harvester) Initialize() {
 	page.MustElement("title").MustText()
 
 	// Initialize stuct
-	e.Browser = browser
-	e.Page = page
 
 	// Load harvesting code into the page
 	// TODO: Support multiple
@@ -196,4 +201,22 @@ func (e *Harvester) clearQueue() {
 			continue
 		}
 	}
+}
+
+func (e *Harvester) Login() {
+	e.Page.MustNavigate("https://accounts.google.com/signin")
+	time.Sleep(1 * time.Second)
+	emailElement := e.Page.MustElement("[type=\"email\"]")
+	time.Sleep(1 * time.Second)
+	emailElement.MustInput(e.Email)
+	time.Sleep(1 * time.Second)
+	e.Page.MustElement("[type=\"button\"][jscontroller]").MustClick()
+	time.Sleep(1 * time.Second)
+	passwordElement := e.Page.MustElement("[type=\"password\"]")
+	time.Sleep(1 * time.Second)
+	passwordElement.MustInput(e.Password)
+	time.Sleep(1 * time.Second)
+	e.Page.MustElement("[type=\"button\"][jscontroller]").MustClick()
+
+	e.Page.MustElement("[href*=\"SignOutOptions\"]")
 }

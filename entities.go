@@ -4,6 +4,7 @@ import (
 	"net/url"
 
 	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/devices"
 	"github.com/phf/go-queue/queue"
 )
 
@@ -51,4 +52,22 @@ type harvesterProxy struct {
 	Port     string
 	Username string
 	Password string
+}
+
+var fakeDevice = devices.Device{
+	Title:          "iPhone X",
+	Capabilities:   []string{"touch", "mobile"},
+	UserAgent:      "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1",
+	AcceptLanguage: "en",
+	Screen: devices.Screen{
+		DevicePixelRatio: 1,
+		Horizontal: devices.ScreenSize{
+			Width:  1280,
+			Height: 720,
+		},
+		Vertical: devices.ScreenSize{
+			Width:  720,
+			Height: 1280,
+		},
+	},
 }
