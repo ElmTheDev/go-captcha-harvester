@@ -16,12 +16,12 @@ func main() {
 
 	go harv.Initialize()
 
-	queueResult, err := harv.Harvest("6Ld2sf4SAAAAAKSgzs0Q13IZhY02Pyo31S2jgOB5", true, map[string]string{})
+	queueResult, err := harv.Harvest("6Ld2sf4SAAAAAKSgzs0Q13IZhY02Pyo31S2jgOB5", true, false, map[string]string{})
 	if err != nil {
 		panic(err)
 	}
 
-	println("got token",  queueResult)
+	println("got token", queueResult)
 	time.Sleep(15 * time.Second)
 	harv.Destroy()
 	println("destroyed")
