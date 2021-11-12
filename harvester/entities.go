@@ -1,4 +1,4 @@
-package main
+package harvester
 
 import (
 	"net/url"
@@ -36,7 +36,7 @@ type Harvester struct {
 type queueEntry struct {
 	SiteKey      string
 	IsEnterprise bool
-	IsInvisible bool
+	IsInvisible  bool
 	RenderParams string
 
 	Channel chan queueResult

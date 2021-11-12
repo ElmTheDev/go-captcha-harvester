@@ -1,4 +1,4 @@
-package main
+package harvester
 
 import (
 	"encoding/json"
@@ -20,14 +20,14 @@ func (e *Harvester) Initialize() {
 		splitProxy := strings.Split(e.Proxy, ":")
 		if len(splitProxy) == 4 {
 			e.ParsedProxy = harvesterProxy{
-				Ip: splitProxy[0],
-				Port: splitProxy[1],
+				Ip:       splitProxy[0],
+				Port:     splitProxy[1],
 				Username: splitProxy[2],
 				Password: splitProxy[3],
 			}
 		} else {
 			e.ParsedProxy = harvesterProxy{
-				Ip: splitProxy[0],
+				Ip:   splitProxy[0],
 				Port: splitProxy[1],
 			}
 		}
@@ -51,7 +51,6 @@ func (e *Harvester) Initialize() {
 
 	browser := rod.New().ControlURL(url).MustConnect()
 	defer browser.MustClose()
-	
 
 	if e.ParsedProxy.Username != "" && e.ParsedProxy.Password != "" {
 		go browser.MustHandleAuth(e.ParsedProxy.Username, e.ParsedProxy.Password)()
@@ -110,11 +109,11 @@ func (e *Harvester) Harvest(siteKey string, isInvisible bool, isEnterprise bool,
 
 	resultChannel := make(chan queueResult)
 	e.Queue.PushBack(queueEntry{
-		SiteKey: siteKey,
+		SiteKey:      siteKey,
 		RenderParams: string(renderParamsObject),
 		IsEnterprise: isEnterprise,
-		IsInvisible: isInvisible,
-		Channel: resultChannel,
+		IsInvisible:  isInvisible,
+		Channel:      resultChannel,
 	})
 
 	resultParsed := <-resultChannel
@@ -156,7 +155,7 @@ func (e *Harvester) setupHtml() {
 			e.Loader = constants.V2Loader
 			e.HTML = constants.V2Html
 			break
-		}	
+		}
 
 	default:
 		e.Type = "v3"
@@ -170,9 +169,9 @@ func (e *Harvester) setupHtml() {
 func (e *Harvester) getJsCallString(entry queueEntry) string {
 	switch e.Type {
 	case "v3":
-			return fmt.Sprintf(`document.harv.harvest("%s", %t, %s)`, entry.SiteKey, entry.IsEnterprise, entry.RenderParams)
+		return fmt.Sprintf(`document.harv.harvest("%s", %t, %s)`, entry.SiteKey, entry.IsEnterprise, entry.RenderParams)
 	case "v2":
-			return fmt.Sprintf(`document.harv.harvest("%s", %t, %s)`, entry.SiteKey, entry.IsInvisible, entry.RenderParams)
+		return fmt.Sprintf(`document.harv.harvest("%s", %t, %s)`, entry.SiteKey, entry.IsInvisible, entry.RenderParams)
 	}
 
 	return "alert('Not supported');"
